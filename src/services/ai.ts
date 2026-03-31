@@ -1,8 +1,14 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+function getGroqClient() {
+  const apiKey = process.env.GROQ_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY não configurada");
+  }
+
+  return new Groq({ apiKey });
+}
 
 export interface ReminderExtraction {
   title: string;
@@ -64,6 +70,8 @@ function fixTranscription(text: string): string {
 }
 
 export async function transcribeAudio(audioFile: File): Promise<string> {
+  const groq = getGroqClient();
+
   const transcription = await groq.audio.transcriptions.create({
     file: audioFile,
     model: "whisper-large-v3",
@@ -77,6 +85,7 @@ export async function transcribeAudio(audioFile: File): Promise<string> {
 export async function extractReminderFromText(
   transcript: string
 ): Promise<ReminderExtraction> {
+  const groq = getGroqClient();
   const lowerTranscript = transcript.toLowerCase().trim();
 
   const junkPhrases = [
@@ -185,7 +194,7 @@ Frase do usuário: "${fixedTranscript}"`;
   console.log("[meLembrAI] Transcript original:", transcript);
   console.log("[meLembrAI] Transcript corrigido:", fixedTranscript);
 
-  const completion = await groq.chat.completions.create({
+ const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       {
@@ -198,7 +207,7 @@ Frase do usuário: "${fixedTranscript}"`;
     temperature: 0,
     max_tokens: 200,
   });
-
+  
   const content = completion.choices[0]?.message?.content?.trim();
   console.log("[meLembrAI] Resposta bruta do Groq:", content);
 

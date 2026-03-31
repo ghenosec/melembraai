@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const result = await createPasswordResetToken(email.trim());
 
     if (result) {
-      const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${result.token}`;
+      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${result.token}`;
 
       console.log("========================================");
       console.log("[meLembrAI] LINK DE RESET DE SENHA:");
