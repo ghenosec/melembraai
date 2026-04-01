@@ -1,6 +1,12 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
 
 export async function sendPasswordResetEmail(
   to: string,
@@ -8,8 +14,8 @@ export async function sendPasswordResetEmail(
   resetUrl: string
 ): Promise<boolean> {
   try {
-    const { error } = await resend.emails.send({
-      from: "meLembrAI <onboarding@resend.dev>",
+    await transporter.sendMail({
+      from: `meLembrAI <${process.env.SMTP_EMAIL}>`,
       to,
       subject: "Redefinir sua senha — meLembrAI",
       html: `
@@ -48,11 +54,6 @@ export async function sendPasswordResetEmail(
         </div>
       `,
     });
-
-    if (error) {
-      console.error("[meLembrAI] Erro ao enviar email:", error);
-      return false;
-    }
 
     console.log("[meLembrAI] Email de reset enviado para:", to);
     return true;
