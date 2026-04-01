@@ -1,8 +1,11 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
+import { db } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
@@ -15,28 +18,48 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string;
-        const password = credentials?.password as string;
+        try {
+          const email = credentials?.email as string;
+          const password = credentials?.password as string;
 
-        if (!email || !password) return null;
+          console.log("[auth] Login attempt:", email);
 
-        const { findUserByEmail, verifyPassword } = await import(
-          "@/services/users"
-        );
+          if (!email || !password) {
+            console.log("[auth] Missing email or password");
+            return null;
+          }
 
-        const user = await findUserByEmail(email);
-        if (!user) return null;
+          const result = await db.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [email.toLowerCase()]
+          );
 
-        if (!user.password_hash) return null;
+          const user = result.rows[0];
 
-        const valid = await verifyPassword(user, password);
-        if (!valid) return null;
+          if (!user) {
+            console.log("[auth] User not found:", email);
+            return null;
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        };
+          if (!user.password_hash) {
+            console.log("[auth] User has no password (Google account)");
+            return null;
+          }
+
+          const valid = await bcrypt.compare(password, user.password_hash);
+          console.log("[auth] Password valid:", valid);
+
+          if (!valid) return null;
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error("[auth] Error in authorize:", error);
+          return null;
+        }
       },
     }),
   ],
@@ -45,9 +68,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "google" && user.email && user.name) {
-        const { findOrCreateGoogleUser } = await import("@/services/users");
-        await findOrCreateGoogleUser(user.email, user.name);
+      try {
+        if (account?.provider === "google" && user.email && user.name) {
+          console.log("[auth] Google sign in:", user.email);
+
+          const existing = await db.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [user.email.toLowerCase()]
+          );
+
+          if (existing.rows.length === 0) {
+            await db.query(
+              `INSERT INTO users (name, email, provider) VALUES ($1, $2, 'google')`,
+              [user.name, user.email.toLowerCase()]
+            );
+            console.log("[auth] Created Google user:", user.email);
+          }
+        }
+      } catch (error) {
+        console.error("[auth] Error in signIn callback:", error);
       }
       return true;
     },
@@ -58,14 +97,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async jwt({ token, user, account }) {
-      if (user && account?.provider === "google" && user.email) {
-        const { findUserByEmail } = await import("@/services/users");
-        const dbUser = await findUserByEmail(user.email);
-        if (dbUser) {
-          token.sub = dbUser.id;
+      try {
+        if (user && account?.provider === "google" && user.email) {
+          const result = await db.query(
+            `SELECT id FROM users WHERE email = $1`,
+            [user.email.toLowerCase()]
+          );
+          if (result.rows[0]) {
+            token.sub = result.rows[0].id;
+          }
+        } else if (user) {
+          token.sub = user.id;
         }
-      } else if (user) {
-        token.sub = user.id;
+      } catch (error) {
+        console.error("[auth] Error in jwt callback:", error);
       }
       return token;
     },
