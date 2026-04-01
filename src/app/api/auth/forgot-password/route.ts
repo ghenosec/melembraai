@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPasswordResetToken } from "@/services/users";
+import { sendPasswordResetEmail } from "@/services/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,12 +16,11 @@ export async function POST(request: NextRequest) {
     const result = await createPasswordResetToken(email.trim());
 
     if (result) {
-      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${result.token}`;
+      const baseUrl =
+        process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL;
+      const resetUrl = `${baseUrl}/reset-password?token=${result.token}`;
 
-      console.log("========================================");
-      console.log("[meLembrAI] LINK DE RESET DE SENHA:");
-      console.log(resetUrl);
-      console.log("========================================");
+      await sendPasswordResetEmail(email.trim(), result.userName, resetUrl);
     }
 
     return NextResponse.json({
