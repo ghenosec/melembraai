@@ -1,17 +1,19 @@
 import { Pool } from "pg";
 
-const globalForDb = globalThis as unknown as { db: Pool | undefined };
+let db: Pool;
 
-export const db =
-  globalForDb.db ??
-  new Pool({
+if (!(globalThis as any).__db) {
+  (globalThis as any).__db = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-    max: 10,
+    ssl: process.env.DATABASE_URL?.includes("localhost")
+      ? false
+      : { rejectUnauthorized: false },
+    max: 5,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 10000,
   });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.db = db;
 }
+
+db = (globalThis as any).__db;
+
+export { db };
