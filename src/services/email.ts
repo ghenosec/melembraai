@@ -22,7 +22,7 @@ export async function sendPasswordResetEmail(
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 24px;">
           <div style="text-align: center; margin-bottom: 32px;">
             <div style="display: inline-block; background: #FF7A00; border-radius: 16px; padding: 12px 16px;">
-              <span style="color: white; font-size: 20px; font-weight: bold;">🎙️ meLembrAI</span>
+              <span style="color: white; font-size: 20px; font-weight: bold;">🎙️ meLembraAI</span>
             </div>
           </div>
 
