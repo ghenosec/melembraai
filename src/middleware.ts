@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
 const publicPaths = [
   "/login",
@@ -8,9 +7,10 @@ const publicPaths = [
   "/forgot-password",
   "/reset-password",
   "/api/auth",
+  "/api/cron",
 ];
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isPublic = publicPaths.some((p) => pathname.startsWith(p));
@@ -27,12 +27,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-  });
+  const hasSession =
+    request.cookies.has("authjs.session-token") ||
+    request.cookies.has("__Secure-authjs.session-token");
 
-  if (!token) {
+  if (!hasSession) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
