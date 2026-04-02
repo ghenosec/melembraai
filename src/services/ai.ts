@@ -133,12 +133,12 @@ export async function extractReminderFromText(
   );
 
   if (isExactJunk || isTooShort) {
-    console.warn("[meLembrAI] Transcrição rejeitada (junk/curta):", transcript);
+    console.warn("[melembraai] Transcrição rejeitada (junk/curta):", transcript);
     throw new Error("Não consegui entender o que você disse. Tente novamente.");
   }
 
   if (!hasReminderSignal) {
-    console.warn("[meLembrAI] Transcrição sem sinal de lembrete:", transcript);
+    console.warn("[melembraai] Transcrição sem sinal de lembrete:", transcript);
     throw new Error(
       "Não parece ser um lembrete. Tente algo como: \"dentista amanhã às 14h\""
     );
@@ -149,7 +149,7 @@ export async function extractReminderFromText(
     lowerTranscript.length < 4;
 
   if (isJunk) {
-    console.warn("[meLembrAI] Transcrição parece alucinação:", transcript);
+    console.warn("[melembraai] Transcrição parece alucinação:", transcript);
     throw new Error("Não consegui entender o que você disse. Tente novamente.");
   }
 
@@ -190,9 +190,9 @@ Formato exato:
 
 Frase do usuário: "${fixedTranscript}"`;
 
-  console.log("[meLembrAI] Hoje BR:", isoDate, "| Amanhã:", getTomorrowBR());
-  console.log("[meLembrAI] Transcript original:", transcript);
-  console.log("[meLembrAI] Transcript corrigido:", fixedTranscript);
+  console.log("[melembraai] Hoje BR:", isoDate, "| Amanhã:", getTomorrowBR());
+  console.log("[melembraai] Transcript original:", transcript);
+  console.log("[melembraai] Transcript corrigido:", fixedTranscript);
 
  const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
@@ -209,7 +209,7 @@ Frase do usuário: "${fixedTranscript}"`;
   });
   
   const content = completion.choices[0]?.message?.content?.trim();
-  console.log("[meLembrAI] Resposta bruta do Groq:", content);
+  console.log("[melembraai] Resposta bruta do Groq:", content);
 
   if (!content) {
     throw new Error("Resposta vazia da IA");
@@ -226,12 +226,12 @@ Frase do usuário: "${fixedTranscript}"`;
     const parsed = JSON.parse(cleaned) as ReminderExtraction;
 
     if (!parsed.date || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) {
-      console.warn("[meLembrAI] Data inválida, usando hoje:", parsed.date);
+      console.warn("[melembraai] Data inválida, usando hoje:", parsed.date);
       parsed.date = isoDate;
     }
 
     if (!parsed.time || !/^\d{2}:\d{2}$/.test(parsed.time)) {
-      console.warn("[meLembrAI] Horário inválido, usando 09:00:", parsed.time);
+      console.warn("[melembraai] Horário inválido, usando 09:00:", parsed.time);
       parsed.time = "09:00";
     }
 
@@ -243,10 +243,10 @@ Frase do usuário: "${fixedTranscript}"`;
       parsed.notes = "";
     }
 
-    console.log("[meLembrAI] Lembrete extraído:", parsed);
+    console.log("[melembraai] Lembrete extraído:", parsed);
     return parsed;
   } catch (e) {
-    console.error("[meLembrAI] Falha no parse:", cleaned);
+    console.error("[melembraai] Falha no parse:", cleaned);
     throw new Error(`Falha ao parsear resposta da IA: ${cleaned}`);
   }
 }

@@ -15,9 +15,9 @@ export async function sendPasswordResetEmail(
 ): Promise<boolean> {
   try {
     await transporter.sendMail({
-      from: `meLembrAI <${process.env.SMTP_EMAIL}>`,
+      from: `meLembraAI <${process.env.SMTP_EMAIL}>`,
       to,
-      subject: "Redefinir sua senha — meLembrAI",
+      subject: "Redefinir sua senha — meLembraAI",
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 24px;">
           <div style="text-align: center; margin-bottom: 32px;">
@@ -49,16 +49,16 @@ export async function sendPasswordResetEmail(
           <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 32px 0;" />
 
           <p style="font-size: 12px; color: #BBBBBB; text-align: center;">
-            meLembrAI — Nunca esqueça o que acabou de lembrar
+            melembraai — Nunca esqueça o que acabou de lembrar
           </p>
         </div>
       `,
     });
 
-    console.log("[meLembrAI] Email de reset enviado para:", to);
+    console.log("[melembraai] Email de reset enviado para:", to);
     return true;
   } catch (error) {
-    console.error("[meLembrAI] Erro ao enviar email:", error);
+    console.error("[melembraai] Erro ao enviar email:", error);
     return false;
   }
 }

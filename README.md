@@ -1,4 +1,4 @@
-# 🎙️ meLembrAI
+# 🎙️ meLembraAI
 
 **Nunca esqueça o que acabou de lembrar.**
 

@@ -90,7 +90,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
   const sendAudio = useCallback(
     async (blob: Blob) => {
-      console.log("[meLembrAI] Enviando áudio...", blob.size, "bytes");
+      console.log("[melembraai] Enviando áudio...", blob.size, "bytes");
       setState("processing");
 
       try {
@@ -103,7 +103,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         });
 
         const data = await response.json();
-        console.log("[meLembrAI] Resposta da API:", data);
+        console.log("[melembraai] Resposta da API:", data);
 
         if (!response.ok || !data.success) {
           throw new Error(data.error || "Não foi possível processar o áudio");
@@ -118,7 +118,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
           setResult(null);
         }, 4000);
       } catch (error) {
-        console.error("[meLembrAI] Erro:", error);
+        console.error("[melembraai] Erro:", error);
         const message =
           error instanceof Error
             ? error.message
@@ -144,7 +144,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       voiceSamplesRef.current = 0;
       peakVolumeRef.current = 0;
 
-      console.log("[meLembrAI] Solicitando microfone...");
+      console.log("[melembraai] Solicitando microfone...");
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -154,7 +154,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         },
       });
 
-      console.log("[meLembrAI] Microfone autorizado");
+      console.log("[melembraai] Microfone autorizado");
 
       streamRef.current = stream;
       chunksRef.current = [];
@@ -217,7 +217,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         const peakVolume = peakVolumeRef.current;
 
         console.log(
-          "[meLembrAI] Gravação parou.",
+          "[melembraai] Gravação parou.",
           "Cancelled:", cancelledRef.current,
           "Voice samples:", voiceSamples,
           "Peak volume:", peakVolume.toFixed(4),
@@ -234,7 +234,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
         if (!hasVoice) {
           console.log(
-            "[meLembrAI] Voz insuficiente. Samples:",
+            "[melembraai] Voz insuficiente. Samples:",
             voiceSamples,
             "Peak:",
             peakVolume.toFixed(4)
@@ -258,7 +258,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         }
 
         const blob = new Blob(chunksRef.current, { type: mimeType });
-        console.log("[meLembrAI] Blob criado:", blob.size, "bytes");
+        console.log("[melembraai] Blob criado:", blob.size, "bytes");
 
         if (timerRef.current) {
           clearInterval(timerRef.current);
@@ -293,7 +293,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       mediaRecorder.start(250);
       setState("recording");
       vibrate(30);
-      console.log("[meLembrAI] Gravando...");
+      console.log("[melembraai] Gravando...");
 
       const startTime = Date.now();
       timerRef.current = setInterval(() => {
@@ -309,7 +309,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         }
       }, MAX_RECORDING_TIME);
     } catch (error) {
-      console.error("[meLembrAI] Erro ao iniciar gravação:", error);
+      console.error("[melembraai] Erro ao iniciar gravação:", error);
       setErrorMessage(
         "Permissão de microfone negada. Ative nas configurações."
       );

@@ -11,14 +11,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "meLembrAI — Nunca esqueça o que acabou de lembrar",
+  title: "melembraai — Nunca esqueça o que acabou de lembrar",
   description:
     "Fale naturalmente e crie lembretes instantaneamente com IA. Rápido, simples e inteligente.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "meLembrAI",
+    title: "melembraai",
   },
   icons: {
     icon: "/icons/icon-192x192.png",
