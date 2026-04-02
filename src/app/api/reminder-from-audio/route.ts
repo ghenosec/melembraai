@@ -1,9 +1,8 @@
-export const dynamic = "force-dynamic";
-
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { transcribeAudio, extractReminderFromText } from "@/services/ai";
 import { createReminder } from "@/services/reminders";
+import { incrementAudioCount, getUserPlan } from "@/services/subscription";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +11,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: "Não autenticado" },
         { status: 401 }
+      );
+    }
+
+    const plan = await getUserPlan(session.user.id);
+    if (!plan.canRecord) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Você atingiu o limite de ${plan.audioLimit} áudios do plano gratuito. Assine o Pro para ilimitado!`,
+          limitReached: true,
+        },
+        { status: 403 }
       );
     }
 
@@ -47,6 +58,8 @@ export async function POST(request: NextRequest) {
       time: reminderData.time || undefined,
     });
 
+    await incrementAudioCount(session.user.id);
+
     return NextResponse.json({
       success: true,
       transcript,
@@ -60,12 +73,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error processing audio reminder:", error);
-
     const message =
       error instanceof Error
         ? error.message
         : "Erro ao processar o lembrete";
-
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 }
