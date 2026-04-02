@@ -8,6 +8,8 @@ const publicPaths = [
   "/reset-password",
   "/api/auth",
   "/api/cron",
+  "/api/subscription/webhook",
+  "/api/subscription/success",
 ];
 
 export function middleware(request: NextRequest) {
