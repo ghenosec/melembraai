@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { saveSubscription } from "@/services/pushSubscriptions";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
+    const { saveSubscription } = await import("@/services/pushSubscriptions");
     const subscription = await request.json();
     await saveSubscription(session.user.id, subscription);
 
