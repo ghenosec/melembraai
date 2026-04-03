@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { BottomNavBar } from "@/components/BottomNavBar";
+import { CheckoutModal } from "@/components/CheckoutModal";
 import {
   Crown,
   Check,
@@ -13,6 +14,7 @@ import {
   Infinity,
   Loader2,
   Sparkles,
+  Clock,
 } from "lucide-react";
 
 interface PlanInfo {
@@ -24,13 +26,36 @@ interface PlanInfo {
   expiresAt: string | null;
 }
 
+function daysUntilExpiry(expiresAt: string | null): number | null {
+  if (!expiresAt) return null;
+  const now = new Date();
+  const expiry = new Date(expiresAt);
+  const diff = expiry.getTime() - now.getTime();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+function formatExpiryDate(expiresAt: string | null): string {
+  if (!expiresAt) return "";
+  try {
+    const date = new Date(expiresAt);
+    return date.toLocaleDateString("pt-BR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
 function SettingsContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [plan, setPlan] = useState<PlanInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [upgrading, setUpgrading] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+
   const upgraded = searchParams.get("upgraded") === "true";
 
   useEffect(() => {
@@ -47,22 +72,6 @@ function SettingsContent() {
     }
   }, [status]);
 
-  const handleUpgrade = async () => {
-    setUpgrading(true);
-    try {
-      const res = await fetch("/api/subscription/checkout", { method: "POST" });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert("Erro ao iniciar pagamento. Tente novamente.");
-      }
-    } catch {
-      alert("Erro ao iniciar pagamento.");
-    } finally {
-      setUpgrading(false);
-    }
-  };
 
   if (status === "loading" || loading) {
     return (
@@ -73,6 +82,12 @@ function SettingsContent() {
   }
 
   const isPro = plan?.plan === "pro";
+  const daysLeft = daysUntilExpiry(plan?.expiresAt ?? null);
+  const expiryFormatted = formatExpiryDate(plan?.expiresAt ?? null);
+  const audioUsedPercent = Math.min(
+    ((plan?.audioCount || 0) / 10) * 100,
+    100
+  );
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark pb-24 safe-top">
@@ -95,35 +110,71 @@ function SettingsContent() {
         <div className="p-5 rounded-3xl bg-surface-light dark:bg-surface-dark">
           <div className="flex items-center gap-3 mb-3">
             {isPro ? (
-              <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Crown className="w-6 h-6 text-primary" />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-2xl bg-gray-500/10 flex items-center justify-center">
-                <Mic className="w-5 h-5 text-gray-500" />
+              <div className="w-12 h-12 rounded-2xl bg-gray-500/10 flex items-center justify-center">
+                <Mic className="w-6 h-6 text-gray-500" />
               </div>
             )}
-            <div>
+            <div className="flex-1">
               <h2 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
                 Plano {isPro ? "Pro" : "Gratuito"}
               </h2>
               <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
                 {isPro
-                  ? "Lembretes ilimitados"
-                  : `${plan?.audioCount || 0}/10 áudios usados este mês`}
+                  ? "Lembretes por voz ilimitados"
+                  : `${plan?.audioCount || 0} de 10 áudios usados este mês`}
               </p>
             </div>
           </div>
 
           {!isPro && plan && (
             <div className="mt-3">
-              <div className="w-full h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
+              <div className="w-full h-2.5 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{
-                    width: `${Math.min((plan.audioCount / 10) * 100, 100)}%`,
-                  }}
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    audioUsedPercent >= 80 ? "bg-red-500" : "bg-primary"
+                  }`}
+                  style={{ width: `${audioUsedPercent}%` }}
                 />
+              </div>
+              <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1.5">
+                {10 - (plan?.audioCount || 0)} áudios restantes este mês
+              </p>
+            </div>
+          )}
+
+          {isPro && daysLeft !== null && (
+            <div className="mt-4 p-4 rounded-2xl bg-primary/5 dark:bg-primary/10">
+              <div className="flex items-center gap-3 mb-3">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                  Período atual
+                </span>
+              </div>
+
+              <div className="w-full h-2.5 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden mb-2">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    daysLeft <= 5 ? "bg-orange-500" : "bg-primary"
+                  }`}
+                  style={{ width: `${Math.max((daysLeft / 30) * 100, 3)}%` }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  {daysLeft === 0
+                    ? "Expira hoje"
+                    : daysLeft === 1
+                    ? "Expira amanhã"
+                    : `${daysLeft} dias restantes`}
+                </span>
+                <span className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                  Renova em {expiryFormatted}
+                </span>
               </div>
             </div>
           )}
@@ -171,8 +222,8 @@ function SettingsContent() {
             </div>
 
             <button
-              onClick={handleUpgrade}
-              disabled={upgrading}
+              onClick={() => setShowCheckoutModal(true)}
+              disabled={false}
               className="w-full h-14 rounded-full
                 bg-primary text-white font-semibold text-base
                 shadow-lg shadow-primary/25
@@ -181,14 +232,10 @@ function SettingsContent() {
                 transition-all duration-200
                 flex items-center justify-center gap-2"
             >
-              {upgrading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <Crown className="w-5 h-5" />
-                  Assinar Pro — R$9/mês
-                </>
-              )}
+               <>
+                <Crown className="w-5 h-5" />
+                Assinar Pro — R$9/mês
+              </>
             </button>
           </div>
 
@@ -197,13 +244,35 @@ function SettingsContent() {
               Plano Gratuito
             </h4>
             <div className="space-y-2">
-              {[
-                "10 áudios por mês",
-                "Notificações push",
-              ].map((text) => (
+              {["10 áudios por mês", "Notificações push"].map((text) => (
                 <div key={text} className="flex items-center gap-3">
                   <Check className="w-3.5 h-3.5 text-text-secondary-light dark:text-text-secondary-dark" />
                   <span className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                    {text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isPro && (
+        <section className="px-6 mb-6">
+          <div className="p-5 rounded-3xl bg-surface-light dark:bg-surface-dark">
+            <h3 className="text-base font-semibold text-text-primary-light dark:text-text-primary-dark mb-3">
+              Seu plano inclui
+            </h3>
+            <div className="space-y-2.5">
+              {[
+                { icon: Infinity, text: "Áudios ilimitados" },
+                { icon: Sparkles, text: "Lembretes inteligentes" },
+                { icon: Calendar, text: "Integração com calendário" },
+                { icon: Bell, text: "Notificações push" },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-3">
+                  <Check className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-text-primary-light dark:text-text-primary-dark">
                     {text}
                   </span>
                 </div>
@@ -221,11 +290,19 @@ function SettingsContent() {
           <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
             {session?.user?.email}
           </p>
-          <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
-            {session?.user?.name}
-          </p>
+          {session?.user?.name && (
+            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
+              {session.user.name}
+            </p>
+          )}
         </div>
       </section>
+
+  <CheckoutModal
+        isOpen={showCheckoutModal}
+        onClose={() => setShowCheckoutModal(false)}
+        userEmail={session?.user?.email || ""}
+      />
 
       <BottomNavBar />
     </div>
