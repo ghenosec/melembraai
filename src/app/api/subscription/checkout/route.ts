@@ -18,6 +18,18 @@ export async function POST(request: NextRequest) {
 
     const { email } = user.rows[0];
 
+    let customerName = email.split("@")[0];
+    let customerCpf = "09240529020";
+    let customerPhone = "11999999999";
+
+    try {
+      const body = await request.json();
+      if (body.customerName) customerName = body.customerName;
+      if (body.customerCpf) customerCpf = body.customerCpf;
+      if (body.customerPhone) customerPhone = body.customerPhone;
+    } catch {
+    }
+
     const response = await fetch("https://api.abacatepay.com/v1/billing/create", {
       method: "POST",
       headers: {
@@ -30,7 +42,7 @@ export async function POST(request: NextRequest) {
         products: [
           {
             externalId: "pro-plan-monthly",
-            name: "meLembraAI Pro — Mensal ",
+            name: "meLembraAI Pro — Mensal",
             quantity: 1,
             price: 990,
           },
@@ -38,19 +50,19 @@ export async function POST(request: NextRequest) {
         returnUrl: `${baseUrl}/settings`,
         completionUrl: `${baseUrl}/api/subscription/success?userId=${session.user.id}`,
         customer: {
-           name: email.split("@")[0],
-          email,
-          cellphone: "11999999999",
-        taxId: "09240529020",
+          name: customerName,
+          email: email,
+          cellphone: customerPhone,
+          taxId: customerCpf,
         },
       }),
     });
 
     const data = await response.json();
-    console.log("[meLembrAI] AbacatePay response:", JSON.stringify(data));
+    console.log("[meLembraAI] AbacatePay response:", JSON.stringify(data));
 
     if (!response.ok || !data.data?.url) {
-      console.error("[meLembrAI] AbacatePay error:", data);
+      console.error("[meLembraAI] AbacatePay error:", data);
       throw new Error(data.error || "Erro ao criar checkout");
     }
 
@@ -59,7 +71,7 @@ export async function POST(request: NextRequest) {
       url: data.data.url,
     });
   } catch (error) {
-    console.error("[meLembrAI] Erro ao criar checkout:", error);
+    console.error("[meLembraAI] Erro ao criar checkout:", error);
     return NextResponse.json(
       { error: "Erro ao iniciar pagamento" },
       { status: 500 }
