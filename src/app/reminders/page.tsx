@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { ReminderCard } from "@/components/ReminderCard";
-import { BottomNav } from "@/components/BottomNav";
+import { BottomNavBar } from "@/components/BottomNavBar";
 import { Loader2 } from "lucide-react";
 
 interface Reminder {
@@ -156,7 +156,7 @@ export default function RemindersPage() {
         )}
       </section>
 
-      <BottomNav />
+      <BottomNavBar />
     </div>
   );
 }

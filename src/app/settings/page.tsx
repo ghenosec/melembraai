@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { BottomNav } from "@/components/BottomNav";
+import { BottomNavBar } from "@/components/BottomNavBar";
 import {
   Crown,
   Check,
@@ -227,7 +227,7 @@ function SettingsContent() {
         </div>
       </section>
 
-      <BottomNav />
+      <BottomNavBar />
     </div>
   );
 }
