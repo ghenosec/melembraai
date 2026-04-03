@@ -6,7 +6,7 @@ import {
 } from "./pushSubscriptions";
 
 webpush.setVapidDetails(
-  "mailto:melembraaisuporte@gmail.com",
+  `mailto:${process.env.SMTP_EMAIL || "noreply@melembraai.com"}`,
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
