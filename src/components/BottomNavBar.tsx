@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ListTodo, LogOut } from "lucide-react";
+import { Home, ListTodo, Settings, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 
-export function BottomNav() {
+export function BottomNavBar() {
   const pathname = usePathname();
 
   const navItems = [
     { href: "/", icon: Home, label: "Início" },
     { href: "/reminders", icon: ListTodo, label: "Lembretes" },
+    { href: "/settings", icon: Settings, label: "Plano" },
   ];
 
   return (
@@ -23,7 +24,7 @@ export function BottomNav() {
               key={href}
               href={href}
               className={`
-                flex flex-col items-center gap-0.5 py-1.5 px-5 rounded-2xl
+                flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-2xl
                 transition-all duration-200
                 ${
                   isActive
@@ -39,7 +40,7 @@ export function BottomNav() {
         })}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex flex-col items-center gap-0.5 py-1.5 px-5 rounded-2xl
+          className="flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-2xl
             transition-all duration-200
             text-text-secondary-light dark:text-text-secondary-dark"
         >

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { VoiceReminderButton } from "@/components/VoiceReminderButton";
 import { ReminderCard } from "@/components/ReminderCard";
-import { BottomNav } from "@/components/BottomNav";
+import { BottomNavBar } from "@/components/BottomNavBar";
 
 interface Reminder {
   id: string;
@@ -152,7 +152,7 @@ export default function HomePage() {
         )}
       </section>
 
-      <BottomNav />
+      <BottomNavBar />
     </div>
   );
 }
