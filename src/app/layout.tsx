@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "melembraai — Nunca esqueça o que acabou de lembrar",
+  title: "melembraAi",
   description:
     "Fale naturalmente e crie lembretes instantaneamente com IA. Rápido, simples e inteligente.",
   manifest: "/manifest.json",
