@@ -1,6 +1,6 @@
 {
-  "name": "meLembrAI",
-  "short_name": "meLembrAI",
+  "name": "meLembraAI",
+  "short_name": "meLembraAI",
   "description": "Nunca esqueça o que acabou de lembrar. Crie lembretes por voz com IA.",
   "start_url": "/",
   "display": "standalone",
