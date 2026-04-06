@@ -141,13 +141,13 @@ Tempo total esperado: **< 2 segundos**
 
 ## Fluxo de Assinatura
 
-Usuário clica em "Assinar Pro" na tela de configurações
-Modal coleta nome, CPF e telefone
-POST /api/subscription/checkout cria billing no AbacatePay
-Redireciona para checkout PIX
-Após pagamento, AbacatePay chama webhook (BILLING_PAID)
-Webhook ativa plano Pro do usuário no banco
-Usuário volta ao app com plano Pro ativo (30 dias)
+- Usuário clica em "Assinar Pro" na tela de configurações
+- Modal coleta nome, CPF e telefone
+- POST /api/subscription/checkout cria billing no AbacatePay
+- Redireciona para checkout PIX
+- Após pagamento, AbacatePay chama webhook (BILLING_PAID)
+- Webhook ativa plano Pro do usuário no banco
+- Usuário volta ao app com plano Pro ativo (30 dias)
 
 ---
 
