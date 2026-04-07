@@ -7,6 +7,7 @@ import { VoiceReminderButton } from "@/components/VoiceReminderButton";
 import { ReminderCard } from "@/components/ReminderCard";
 import { BottomNavBar } from "@/components/BottomNavBar";
 import { NotificationBanner } from "@/components/NotificationBanner";
+import { MicrophoneBanner } from "@/components/MicrophoneBanner";
 
 interface Reminder {
   id: string;
@@ -111,10 +112,11 @@ export default function HomePage() {
         </h1>
       </header>
       <section className="flex flex-col items-center justify-center py-12 px-6">
-         <NotificationBanner />
+          <NotificationBanner />
+      <MicrophoneBanner />
       <section className="flex flex-col items-center justify-center py-12 px-6">
-      </section>
         <VoiceReminderButton />
+      </section>
       </section>
       <section className="px-6">
         {reminders.length > 0 && (
